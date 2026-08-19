@@ -15,6 +15,18 @@ Apple Watch / iPhone のヘルスケアデータを、毎晩自動で `daily_log
 
 方式は2つ。**まず A のショートカットで試して、睡眠まで自動化したくなったら B に乗り換える**のが早い。
 
+## 前提: Mac mini は経由しない
+
+A / B のどちらも **iPhone から直接 Supabase に HTTPS で送る**構成で、Entity が動いている Mac mini は関与しない。
+
+```
+iPhone（オーナーのプライベート Apple アカウント）
+  ├─ ショートカット / Health Auto Export ──→ Supabase   ← Mac mini を通らない
+  └─ LINE で写真・数値を送る ──→ Entity (Mac mini) ──→ Supabase
+```
+
+Mac mini は別の Apple アカウントで運用されているが、ヘルスケア連携には無関係。iCloud 同期でヘルスケアを Mac mini に渡す必要はない（渡せない）。
+
 ---
 
 ## A. iOS ショートカット（無料・当日中に動く）
