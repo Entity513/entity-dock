@@ -31,6 +31,94 @@ body {
   background-size: 24px 24px;
 }
 
+/* ------------------------------------------------------------
+   アニメーション
+   計器が順に立ち上がる感じ。動きを減らす設定では全部止める。
+   ------------------------------------------------------------ */
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scan {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.reveal {
+  animation: reveal-in 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* タブを切り替えたときに中身が入れ替わったことを伝える */
+.page-enter {
+  animation: fade-in 220ms ease-out both;
+}
+
+/* ヘッダー下を一度だけ走る走査線。起動した感を出す */
+.scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanline::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-accent) 22%, transparent),
+    transparent
+  );
+  animation: scan 1.1s ease-out 1;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .page-enter {
+    animation: none;
+  }
+  .scanline::after {
+    display: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @layer components {
   /* 数値表示: 等幅 + tabular-nums */
   .num {
@@ -52,6 +140,19 @@ body {
     background-color: var(--color-panel);
     border: 1px solid var(--color-line);
     border-radius: 4px;
+  }
+
+  /* タップに沈む感触。iPhone で押した実感が要る */
+  button {
+    transition:
+      transform 90ms ease-out,
+      border-color 140ms ease-out,
+      background-color 140ms ease-out,
+      color 140ms ease-out;
+  }
+
+  button:active:not(:disabled) {
+    transform: scale(0.975);
   }
 
   .input {

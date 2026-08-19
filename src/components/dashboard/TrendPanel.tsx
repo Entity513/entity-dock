@@ -59,6 +59,11 @@ export function TrendPanel({
       yStep,
     )
   const dense = data.length > DENSE_DAYS
+  // 目盛りの桁数で軸幅を決める。固定幅だと 12,000 のような値が左で切れる
+  const yAxisWidth = Math.max(
+    34,
+    Math.max(...scale.ticks.map((t) => format(t).length)) * 6.4 + 8,
+  )
   const label = (value: number | null) =>
     value == null ? '--' : `${format(value)}${unit}`
 
@@ -121,7 +126,7 @@ export function TrendPanel({
               <YAxis
                 domain={scale.domain}
                 ticks={scale.ticks}
-                width={34}
+                width={yAxisWidth}
                 tick={AXIS_TICK}
                 tickLine={false}
                 axisLine={false}

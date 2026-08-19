@@ -50,10 +50,28 @@ function TagTick({ x, y, textAnchor, payload }: TickProps) {
   )
 }
 
-export function TagConditionPanel({ stats }: { stats: TagStat[] }) {
+interface Props {
+  stats: TagStat[]
+  en?: string
+  ja?: string
+  /** 棒の値の単位。省略時はコンディション (0-10 固定軸) として扱う */
+  unit?: string
+  emptyMessage?: string
+}
+
+export function TagConditionPanel({
+  stats,
+  en = 'MEAL TAGS',
+  ja = '食事タグ別の平均コンディション',
+  unit,
+  emptyMessage = '2日以上ついた食事タグがまだありません。',
+}: Props) {
+  // コンディション以外（部位別の日数など）は軸を実データに合わせる
+  const isScore = unit == null
+  const maxValue = Math.max(1, ...stats.map((s) => s.avg))
   const rows = stats.map((s) => ({
     ...s,
-    label: `${truncate(s.tag)} (${s.days}日)`,
+    label: isScore ? `${truncate(s.tag)} (${s.days}日)` : truncate(s.tag),
   }))
 
   const tooltip = ({ active, payload }: TooltipContentProps) => {
@@ -61,19 +79,25 @@ export function TagConditionPanel({ stats }: { stats: TagStat[] }) {
     const row = payload[0].payload as (typeof rows)[number]
     return (
       <TooltipShell title={row.tag}>
-        <TooltipRow
-          label="平均コンディション"
-          value={`${row.avg.toFixed(1)}/10`}
-        />
-        <TooltipRow label="日数" value={`${row.days}日`} />
+        {isScore ? (
+          <>
+            <TooltipRow
+              label="平均コンディション"
+              value={`${row.avg.toFixed(1)}/10`}
+            />
+            <TooltipRow label="日数" value={`${row.days}日`} />
+          </>
+        ) : (
+          <TooltipRow label="実施日数" value={`${row.days}${unit}`} />
+        )}
       </TooltipShell>
     )
   }
 
   return (
-    <DashboardPanel en="MEAL TAGS" ja="食事タグ別の平均コンディション">
+    <DashboardPanel en={en} ja={ja}>
       {rows.length === 0 ? (
-        <PanelEmpty message="2日以上ついた食事タグがまだありません。" />
+        <PanelEmpty message={emptyMessage} />
       ) : (
         <div className="py-2 pr-1">
           <ResponsiveContainer
@@ -93,8 +117,9 @@ export function TagConditionPanel({ stats }: { stats: TagStat[] }) {
               />
               <XAxis
                 type="number"
-                domain={[0, 10]}
-                ticks={[0, 2, 4, 6, 8, 10]}
+                domain={isScore ? [0, 10] : [0, Math.ceil(maxValue)]}
+                ticks={isScore ? [0, 2, 4, 6, 8, 10] : undefined}
+                allowDecimals={false}
                 tick={AXIS_TICK}
                 tickLine={false}
                 tickMargin={4}
@@ -116,7 +141,8 @@ export function TagConditionPanel({ stats }: { stats: TagStat[] }) {
                 fillOpacity={0.75}
                 barSize={12}
                 radius={[0, 2, 2, 0]}
-                isAnimationActive={false}
+                animationDuration={520}
+                animationEasing="ease-out"
               >
                 <LabelList
                   dataKey="avg"
@@ -126,7 +152,11 @@ export function TagConditionPanel({ stats }: { stats: TagStat[] }) {
                   fontSize={10}
                   fontFamily="var(--font-mono)"
                   formatter={(value) =>
-                    typeof value === 'number' ? value.toFixed(1) : value
+                    typeof value !== 'number'
+                      ? value
+                      : isScore
+                        ? value.toFixed(1)
+                        : String(value)
                   }
                 />
               </Bar>

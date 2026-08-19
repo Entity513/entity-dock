@@ -7,7 +7,7 @@ export function DayDetailPage() {
   const navigate = useNavigate()
 
   if (!date || !isValidDateStr(date)) {
-    return <Navigate to="/log" replace />
+    return <Navigate to="/" replace />
   }
 
   const isToday = date === todayStr()
@@ -15,8 +15,8 @@ export function DayDetailPage() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between px-1">
-        <Link to="/log" className="text-sm text-ink-dim">
-          ‹ カレンダー
+        <Link to="/" className="text-sm text-ink-dim">
+          ‹ まとめ
         </Link>
         {isToday && (
           <span className="rounded-[3px] border border-accent/40 px-1.5 py-0.5 text-[11px] text-accent">

@@ -4,20 +4,24 @@ import {
   RouterProvider,
 } from 'react-router-dom'
 import { AppShell } from './components/layout/AppShell'
-import { DashboardPage } from './pages/DashboardPage'
+import { BridgePage } from './pages/BridgePage'
 import { DayDetailPage } from './pages/DayDetailPage'
-import { LogPage } from './pages/LogPage'
-import { TodayPage } from './pages/TodayPage'
+import { DrivePage } from './pages/DrivePage'
+import { FuelPage } from './pages/FuelPage'
+import { MindPage } from './pages/MindPage'
+import { RestPage } from './pages/RestPage'
 
 // 認証なし構成（オーナーの判断）。ログイン画面もセッション管理も持たない。
 const router = createBrowserRouter([
   {
     element: <AppShell />,
     children: [
-      { path: '/', element: <TodayPage /> },
-      { path: '/log', element: <LogPage /> },
+      { path: '/', element: <BridgePage /> },
+      { path: '/drive', element: <DrivePage /> },
+      { path: '/fuel', element: <FuelPage /> },
+      { path: '/mind', element: <MindPage /> },
+      { path: '/rest', element: <RestPage /> },
       { path: '/log/:date', element: <DayDetailPage /> },
-      { path: '/dashboard', element: <DashboardPage /> },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },

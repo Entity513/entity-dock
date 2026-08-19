@@ -22,10 +22,10 @@ export function BottomSheet({ title, en, onClose, children }: BottomSheetProps) 
       <button
         type="button"
         aria-label="閉じる"
-        className="absolute inset-0 bg-black/60"
+        className="absolute inset-0 animate-[fade-in_180ms_ease-out_both] bg-black/60"
         onClick={onClose}
       />
-      <div className="relative max-h-[85dvh] overflow-y-auto border-t border-line bg-panel pb-[max(env(safe-area-inset-bottom),1rem)]">
+      <div className="relative max-h-[85dvh] animate-[sheet-up_260ms_cubic-bezier(0.16,1,0.3,1)_both] overflow-y-auto border-t border-line bg-panel pb-[max(env(safe-area-inset-bottom),1rem)]">
         <div className="sticky top-0 flex items-center justify-between border-b border-line bg-panel px-4 py-3">
           <div>
             {en && <div className="microlabel">{en}</div>}

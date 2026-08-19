@@ -27,15 +27,29 @@ export interface RangeSummary {
   avgWeight: number | null
   loggedDays: number
   rangeDays: number
+  /** 系統別タブのヘッダー用 */
+  avgSteps: number | null
+  avgMeditation: number | null
+  avgSleepScore: number | null
+  workoutDays: number
+  mealDays: number
 }
 
 export interface RangeData {
   weight: TrendPoint[]
   sleep: TrendPoint[]
   condition: TrendPoint[]
+  mood: TrendPoint[]
+  steps: TrendPoint[]
+  activeKcal: TrendPoint[]
+  exerciseMin: TrendPoint[]
+  meditation: TrendPoint[]
+  sleepScore: TrendPoint[]
   sleepVsCondition: ScatterPoint[]
   meditationVsCondition: ScatterPoint[]
+  stepsVsCondition: ScatterPoint[]
   mealTagConditions: TagStat[]
+  workoutTagDays: TagStat[]
   summary: RangeSummary
 }
 
@@ -173,8 +187,22 @@ export function useRangeData(days: number) {
         (d) => byDate.get(d)?.condition_score ?? null,
       )
 
+      const mood = toTrend(dates, (d) => byDate.get(d)?.mood ?? null)
+      const steps = toTrend(dates, (d) => byDate.get(d)?.steps ?? null)
+      const activeKcal = toTrend(dates, (d) => byDate.get(d)?.active_kcal ?? null)
+      const exerciseMin = toTrend(
+        dates,
+        (d) => byDate.get(d)?.exercise_min ?? null,
+      )
+      const meditation = toTrend(
+        dates,
+        (d) => byDate.get(d)?.meditation_min ?? null,
+      )
+      const sleepScore = toTrend(dates, (d) => byDate.get(d)?.sleep_score ?? null)
+
       const sleepVsCondition: ScatterPoint[] = []
       const meditationVsCondition: ScatterPoint[] = []
+      const stepsVsCondition: ScatterPoint[] = []
       for (const row of logRows) {
         const y = row.condition_score
         if (y == null) continue
@@ -187,6 +215,9 @@ export function useRangeData(days: number) {
             x: row.meditation_min,
             y,
           })
+        }
+        if (row.steps != null) {
+          stepsVsCondition.push({ date: row.date, x: row.steps, y })
         }
       }
 
@@ -212,6 +243,23 @@ export function useRangeData(days: number) {
       }
       mealTagConditions.sort((a, b) => b.avg - a.avg || b.days - a.days)
 
+      // 部位タグは「何日やったか」が知りたいので、平均ではなく日数で並べる
+      const workoutTagDates = new Map<string, Set<string>>()
+      for (const row of workoutRows) {
+        for (const tag of row.tags ?? []) {
+          const dateSet = workoutTagDates.get(tag) ?? new Set<string>()
+          dateSet.add(row.date)
+          workoutTagDates.set(tag, dateSet)
+        }
+      }
+      const workoutTagDays: TagStat[] = [...workoutTagDates]
+        .map(([tag, dateSet]) => ({
+          tag,
+          avg: dateSet.size,
+          days: dateSet.size,
+        }))
+        .sort((a, b) => b.days - a.days)
+
       const recorded = new Set<string>()
       for (const row of logRows) if (hasContent(row)) recorded.add(row.date)
       for (const row of mealRows) recorded.add(row.date)
@@ -222,20 +270,39 @@ export function useRangeData(days: number) {
         defined(logRows.map((r) => sleepHours(r.sleep_start, r.sleep_end))),
       )
       const avgWeight = mean(defined(logRows.map((r) => r.weight_kg)))
+      const avgSteps = mean(defined(logRows.map((r) => r.steps)))
+      const avgMeditation = mean(defined(logRows.map((r) => r.meditation_min)))
+      const avgSleepScore = mean(defined(logRows.map((r) => r.sleep_score)))
+
+      const workoutDays = new Set(workoutRows.map((r) => r.date)).size
+      const mealDays = new Set(mealRows.map((r) => r.date)).size
 
       return {
         weight,
         sleep,
         condition,
+        mood,
+        steps,
+        activeKcal,
+        exerciseMin,
+        meditation,
+        sleepScore,
         sleepVsCondition,
         meditationVsCondition,
+        stepsVsCondition,
         mealTagConditions,
+        workoutTagDays,
         summary: {
           avgCondition: avgCondition == null ? null : round1(avgCondition),
           avgSleepHours: avgSleepHours == null ? null : round2(avgSleepHours),
           avgWeight: avgWeight == null ? null : round1(avgWeight),
           loggedDays: recorded.size,
           rangeDays: dates.length,
+          avgSteps: avgSteps == null ? null : Math.round(avgSteps),
+          avgMeditation: avgMeditation == null ? null : round1(avgMeditation),
+          avgSleepScore: avgSleepScore == null ? null : Math.round(avgSleepScore),
+          workoutDays,
+          mealDays,
         },
       }
     },
