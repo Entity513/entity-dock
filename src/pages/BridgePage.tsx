@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { DailyNumbersPanel } from '../components/daily/DailyNumbersPanel'
 import { DailyStatusBoard } from '../components/daily/DailyStatusBoard'
 import { useDaySheets } from '../components/daily/useDaySheets'
 import { AnalysisBlock } from '../components/dashboard/AnalysisBlock'
@@ -12,6 +11,7 @@ import { Reveal } from '../components/ui/Reveal'
 import { useDailyLog } from '../hooks/useDailyLog'
 import { useMeals } from '../hooks/useMeals'
 import { useMonthData } from '../hooks/useMonthData'
+import { useRangeData } from '../hooks/useRangeData'
 import { useWorkouts } from '../hooks/useWorkouts'
 import { addMonths, formatDateJa, monthOf, todayStr } from '../lib/date'
 
@@ -59,7 +59,9 @@ export function BridgePage() {
   const monthQ = useMonthData(ym)
 
   const log = dailyQ.data ?? null
-  const { openDaily, openMeal, openWorkout, sheets } = useDaySheets(date, log)
+  const { openDaily, sheets } = useDaySheets(date, log)
+  // AnalysisBlock と同じキーなので、リクエストは1回に束ねられる
+  const streak = useRangeData(days).data?.summary.streak
 
   const dayLoading =
     dailyQ.isLoading || mealsQ.isLoading || workoutsQ.isLoading
@@ -88,21 +90,16 @@ export function BridgePage() {
       ) : dayLoading ? (
         <div className="panel h-48 animate-pulse" />
       ) : (
-        <>
-          <Reveal index={0}>
-            <DailyStatusBoard
-              log={log}
-              meals={mealsQ.data ?? []}
-              workouts={workoutsQ.data ?? []}
-              onOpenDaily={openDaily}
-              onOpenMeal={(type) => openMeal(null, type)}
-              onOpenWorkout={() => openWorkout(null)}
-            />
-          </Reveal>
-          <Reveal index={1}>
-            <DailyNumbersPanel log={log} onOpenDaily={openDaily} />
-          </Reveal>
-        </>
+        <Reveal index={0}>
+          <DailyStatusBoard
+            log={log}
+            meals={mealsQ.data ?? []}
+            workouts={workoutsQ.data ?? []}
+            streak={streak}
+            onOpenDaily={openDaily}
+            onGoTab={(path) => void navigate(path)}
+          />
+        </Reveal>
       )}
 
       <Reveal index={2}>

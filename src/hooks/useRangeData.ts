@@ -27,6 +27,8 @@ export interface RangeSummary {
   avgWeight: number | null
   loggedDays: number
   rangeDays: number
+  /** 今日（未記録なら昨日）から遡って連続で記録がある日数 */
+  streak: number
   /** 系統別タブのヘッダー用 */
   avgSteps: number | null
   avgMeditation: number | null
@@ -277,6 +279,15 @@ export function useRangeData(days: number) {
       const workoutDays = new Set(workoutRows.map((r) => r.date)).size
       const mealDays = new Set(mealRows.map((r) => r.date)).size
 
+      // 今日がまだ未記録でも連続は途切れていない（1日は猶予する）。
+      // 日中に「連続0日」と出ると、その日の記録をやめる動機になるため。
+      let streak = 0
+      let cursor = recorded.has(last) ? last : addDays(last, -1)
+      while (recorded.has(cursor)) {
+        streak++
+        cursor = addDays(cursor, -1)
+      }
+
       return {
         weight,
         sleep,
@@ -298,6 +309,7 @@ export function useRangeData(days: number) {
           avgWeight: avgWeight == null ? null : round1(avgWeight),
           loggedDays: recorded.size,
           rangeDays: dates.length,
+          streak,
           avgSteps: avgSteps == null ? null : Math.round(avgSteps),
           avgMeditation: avgMeditation == null ? null : round1(avgMeditation),
           avgSleepScore: avgSleepScore == null ? null : Math.round(avgSleepScore),

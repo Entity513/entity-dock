@@ -5,7 +5,6 @@ import { MealTimeline } from '../meals/MealTimeline'
 import { Reveal } from '../ui/Reveal'
 import { WorkoutSection } from '../workouts/WorkoutSection'
 import { DailyNumbersPanel } from './DailyNumbersPanel'
-import { DailyStatusBoard } from './DailyStatusBoard'
 import { useDaySheets } from './useDaySheets'
 
 /**
@@ -65,21 +64,10 @@ export function DayView({ date }: { date: string }) {
   return (
     <div className="flex flex-col gap-3">
       <Reveal index={0}>
-        <DailyStatusBoard
-          log={log}
-          meals={meals}
-          workouts={workouts}
-          onOpenDaily={openDaily}
-          onOpenMeal={(type) => openMeal(null, type)}
-          onOpenWorkout={() => openWorkout(null)}
-        />
-      </Reveal>
-
-      <Reveal index={1}>
         <DailyNumbersPanel log={log} onOpenDaily={openDaily} />
       </Reveal>
 
-      <Reveal index={2}>
+      <Reveal index={1}>
         <MealTimeline
           meals={meals}
           onEdit={(meal) => openMeal(meal)}
@@ -87,7 +75,7 @@ export function DayView({ date }: { date: string }) {
         />
       </Reveal>
 
-      <Reveal index={3}>
+      <Reveal index={2}>
         <WorkoutSection
           workouts={workouts}
           onEdit={(workout) => openWorkout(workout)}
@@ -95,7 +83,7 @@ export function DayView({ date }: { date: string }) {
         />
       </Reveal>
 
-      <Reveal index={4}>
+      <Reveal index={3}>
         <section className="panel">
           <header className="flex items-center justify-between border-b border-line px-3 py-2">
             <div className="flex items-baseline gap-2">
