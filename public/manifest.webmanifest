@@ -1,0 +1,16 @@
+{
+  "name": "Entity Dock",
+  "short_name": "Entity Dock",
+  "description": "あなたの夢を、目的地へ。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0e12",
+  "theme_color": "#0a0e12",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

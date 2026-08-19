@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Re:Poker オペレーション説明資料</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1 class="hero-title">Re:Poker</h1>
+            <p class="hero-copy">オペレーションシステム</p>
+            <p class="hero-subcopy">受付 → プレイ管理 → 精算の一貫した流れ</p>
+        </div>
+    </section>
+
+    <!-- 全体像（思想） -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">全体像（思想）</h2>
+            <div class="philosophy-box large">
+                <p class="philosophy-text">
+                    この仕組みの本質は、<strong>① 来店者の重複・誤処理を防ぐこと</strong>、
+                    <strong>② トーナメントとリングを明確に分離して管理すること</strong>、
+                    <strong>③ 人為ミスが起きやすい「お金の動き」を紙＋スプレッドシートで二重管理すること</strong>にある。
+                </p>
+                <p class="philosophy-text">
+                    アナログ（紙）とデジタル（Poker Fans／スプレッドシート）を意図的に併用している点が肝。
+                </p>
+            </div>
+            <div class="core-principles">
+                <div class="principle-item">
+                    <div class="principle-icon">🛡️</div>
+                    <div class="principle-number">01</div>
+                    <h3 class="principle-title">重複・誤処理の防止</h3>
+                </div>
+                <div class="principle-item">
+                    <div class="principle-icon">🔀</div>
+                    <div class="principle-number">02</div>
+                    <h3 class="principle-title">トーナメントとリングの分離</h3>
+                </div>
+                <div class="principle-item">
+                    <div class="principle-icon">🔒</div>
+                    <div class="principle-number">03</div>
+                    <h3 class="principle-title">二重管理による安全性</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ① 来店受付フロー -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">① 来店受付フロー（全プレイヤー共通）</h2>
+            <p class="section-description">
+                来店者の重複・誤処理を防ぐための統一された受付プロセス
+            </p>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="step-icon">📱</div>
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Poker Fans登録確認</h3>
+                    <p class="step-text">来店時にPoker Fans登録有無を確認</p>
+                </div>
+                <div class="flow-arrow-down">↓</div>
+                <div class="flow-branch">
+                    <div class="branch-path">
+                        <div class="branch-icon">🆕</div>
+                        <div class="branch-label">未登録の場合</div>
+                        <div class="branch-steps">
+                            <div class="branch-step">📥 アプリをダウンロード</div>
+                            <div class="branch-step">✍️ その場で会員登録</div>
+                        </div>
+                    </div>
+                    <div class="branch-divider">OR</div>
+                    <div class="branch-path">
+                        <div class="branch-icon">👤</div>
+                        <div class="branch-label">既存会員／リピーター</div>
+                        <div class="branch-steps">
+                            <div class="branch-step">📋 Poker Fansの会員画面を提示</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flow-arrow-down">↓</div>
+                <div class="flow-step">
+                    <div class="step-icon">⌨️</div>
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">会員ID入力</h3>
+                    <p class="step-text">会員IDを受付用スプレッドシートに入力</p>
+                </div>
+                <div class="flow-arrow-down">↓</div>
+                <div class="flow-step highlight">
+                    <div class="step-icon">✅</div>
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">自動照合</h3>
+                    <p class="step-text">
+                        <span class="flow-chain">ID入力</span> 
+                        <span class="arrow-inline">→</span> 
+                        <span class="flow-chain">会員情報マスター参照</span> 
+                        <span class="arrow-inline">→</span> 
+                        <span class="flow-chain">ポーカーネームが自動表示</span><br>
+                        <strong class="result-text">→ 別人を誤って来店処理するのを防止</strong>
+                    </p>
+                </div>
+            </div>
+            <div class="important-note">
+                <p class="note-text">
+                    <strong>※この時点で「本日の来店者」が確定する</strong>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ② トーナメントの運用 -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">② トーナメントの運用</h2>
+            <p class="section-description">
+                デジタル管理とスプレッドシートによる二層構造
+            </p>
+            <div class="tournament-flow">
+                <div class="flow-item">
+                    <div class="flow-icon">🎯</div>
+                    <div class="flow-number">01</div>
+                    <h3 class="flow-title">エントリー処理</h3>
+                    <p class="flow-text">トーナメント参加者はPoker Fans上でエントリー処理</p>
+                </div>
+                <div class="flow-arrow-large">→</div>
+                <div class="flow-item">
+                    <div class="flow-icon">📊</div>
+                    <div class="flow-number">02</div>
+                    <h3 class="flow-title">集計・確認</h3>
+                    <p class="flow-text">受付または運営がスプレッドシートにエントリー数を入力</p>
+                </div>
+            </div>
+            <div class="two-layer-box">
+                <h3 class="two-layer-title">二層構造</h3>
+                <div class="two-layer-content">
+                    <div class="layer-item">
+                        <div class="layer-icon">📱</div>
+                        <div class="layer-label">参加管理</div>
+                        <div class="layer-value">Poker Fans</div>
+                    </div>
+                    <div class="layer-divider">
+                        <div class="layer-divider-line"></div>
+                        <div class="layer-divider-text">×</div>
+                        <div class="layer-divider-line"></div>
+                    </div>
+                    <div class="layer-item">
+                        <div class="layer-icon">📋</div>
+                        <div class="layer-label">集計・確認</div>
+                        <div class="layer-value">スプレッドシート</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ③ リングゲームの運用 -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">③ リングゲームの運用（紙ベース管理）</h2>
+            <p class="section-description">
+                紙による管理で、その場での記入を徹底し後追いミスを防ぐ
+            </p>
+            <div class="ring-start-box">
+                <h3 class="ring-section-title">■ 開始時</h3>
+                <div class="ring-steps">
+                    <div class="ring-step">
+                        <div class="ring-step-icon">📄</div>
+                        <div class="ring-step-number">1</div>
+                        <p class="ring-step-text">プレイヤーに管理用の紙を1枚渡す</p>
+                    </div>
+                    <div class="ring-step">
+                        <div class="ring-step-icon">✍️</div>
+                        <div class="ring-step-number">2</div>
+                        <p class="ring-step-text">紙に記載する内容</p>
+                        <div class="ring-details">
+                            <div class="detail-item">👤 プレイヤーネーム</div>
+                            <div class="detail-item">💎 残ポイント数</div>
+                            <div class="detail-item">💰 当日のバイイン額</div>
+                            <div class="detail-item">💸 アウト額（途中・最終）</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="rules-box critical">
+                <h3 class="rules-title">■ 記入ルール（重要）</h3>
+                <div class="rules-list">
+                    <div class="rule-item">
+                        <span class="rule-icon">✓</span>
+                        <span class="rule-text">記入は必ずフロアスタッフが行う</span>
+                    </div>
+                    <div class="rule-item">
+                        <span class="rule-icon">✓</span>
+                        <span class="rule-text">記入タイミング：バイインとアウト</span>
+                        <div class="rule-subitems">
+                            <div class="rule-subitem">① バイイン</div>
+                            <div class="rule-subitem">② アウト</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="rule-warning">
+                    <p class="warning-text">
+                        <strong>※プレイヤー自己申告は禁止</strong><br>
+                        <strong>※その場記入で後追いミスを防ぐ</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ④ リングゲーム終了時 -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">④ リングゲーム終了時（預けチップ処理）</h2>
+            <p class="section-description">
+                預けチップの正確なカウントと相互確認による安全性確保
+            </p>
+            <div class="chip-flow">
+                <div class="chip-step">
+                    <div class="step-icon">🔢</div>
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">チップカウント</h3>
+                    <p class="step-text">リング終了後、預けチップがある場合、フロアがその場でチップをカウント</p>
+                </div>
+                <div class="step-connector-arrow">→</div>
+                <div class="chip-step">
+                    <div class="step-icon">✍️</div>
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">記入</h3>
+                    <p class="step-text">カウント結果を紙に記入</p>
+                </div>
+                <div class="step-connector-arrow">→</div>
+                <div class="chip-step">
+                    <div class="step-icon">🤝</div>
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">相互確認</h3>
+                    <p class="step-text">プレイヤー本人と金額を相互確認</p>
+                </div>
+                <div class="step-connector-arrow">→</div>
+                <div class="chip-step">
+                    <div class="step-icon">📤</div>
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">受付へ持参</h3>
+                    <p class="step-text">プレイヤーが紙を受付へ持参</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ⑤ 受付での精算フロー -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">⑤ 受付での精算フロー</h2>
+            <p class="section-description">
+                紙とスプレッドシートによる二重確認による精算処理
+            </p>
+            <div class="settlement-flow">
+                <div class="settlement-step">
+                    <div class="step-icon">🔍</div>
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">確認項目</h3>
+                    <p class="step-text">受付担当が以下を確認</p>
+                    <div class="check-items">
+                        <div class="check-item">💰 紙に記載されたバイイン額</div>
+                        <div class="check-item">💵 紙に記載された預け入れ額</div>
+                    </div>
+                </div>
+                <div class="step-connector-arrow">→</div>
+                <div class="settlement-step">
+                    <div class="step-icon">⌨️</div>
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">スプレッドシート入力</h3>
+                    <p class="step-text">預け入れ額をスプレッドシートに入力</p>
+                </div>
+                <div class="step-connector-arrow">→</div>
+                <div class="settlement-step highlight">
+                    <div class="step-icon">📊</div>
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">ポイント残高表示</h3>
+                    <p class="step-text">スプレッドシートにはプレイヤーの保有ポイント残高が表示されている</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ⑥ 支払い判定ロジック -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">⑥ 支払い判定ロジック（最重要）</h2>
+            <p class="section-description">
+                一貫性のある支払い判定により、混乱を防ぎ運用を安定させる
+            </p>
+            <div class="payment-logic">
+                <div class="logic-condition success">
+                    <div class="condition-header">
+                        <div class="condition-icon-large">💰</div>
+                        <h3 class="condition-title">預け入れ額 ＞ バイイン額</h3>
+                    </div>
+                    <div class="condition-result-box">
+                        <div class="result-icon">✅</div>
+                        <p class="condition-result">リングゲームの会計は発生しない</p>
+                    </div>
+                </div>
+                <div class="logic-divider">
+                    <div class="divider-line"></div>
+                    <span class="divider-text">または</span>
+                    <div class="divider-line"></div>
+                </div>
+                <div class="logic-condition">
+                    <div class="condition-header">
+                        <div class="condition-icon-large">💳</div>
+                        <h3 class="condition-title">会計が発生する場合</h3>
+                    </div>
+                    <div class="condition-options">
+                        <div class="option-item">
+                            <div class="option-icon">💎</div>
+                            <div class="option-number">1</div>
+                            <div class="option-content">
+                                <p class="option-condition">プレイヤーがポイントを保有していれば</p>
+                                <p class="option-result">→ ポイントから支払い可能</p>
+                            </div>
+                        </div>
+                        <div class="option-item">
+                            <div class="option-icon">💵</div>
+                            <div class="option-number">2</div>
+                            <div class="option-content">
+                                <p class="option-condition">ポイントが不足 or なしの場合</p>
+                                <p class="option-result">→ 現金 or カードで支払い</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="principle-box">
+                <p class="principle-text">
+                    <strong>※「まずポイント消化」というルールが一貫性を作る</strong>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 強みと弱点 -->
+    <section class="section section-alt section-closing">
+        <div class="container">
+            <h2 class="section-title">このオペレーションの強みと弱点</h2>
+            <p class="section-description">
+                冷静な評価による、現実的な運用指針
+            </p>
+            <div class="evaluation-grid">
+                <div class="evaluation-card strength">
+                    <h3 class="evaluation-title">強み</h3>
+                    <div class="evaluation-items">
+                        <div class="evaluation-item">
+                            <div class="eval-icon">✓</div>
+                            <p class="eval-text">
+                                人がミスしやすい部分（お金・名前）を<br>
+                                紙 × 自動表示 × 二重確認で潰している
+                            </p>
+                        </div>
+                        <div class="evaluation-item">
+                            <div class="eval-icon">✓</div>
+                            <p class="eval-text">
+                                トーナメントとリングを完全に切り分けているため<br>
+                                収支・トラブルが混線しにくい
+                            </p>
+                        </div>
+                        <div class="evaluation-item">
+                            <div class="eval-icon">✓</div>
+                            <p class="eval-text">
+                                システム未完成でも即日回せる現実解
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="evaluation-card weakness">
+                    <h3 class="evaluation-title">弱点</h3>
+                    <div class="evaluation-items">
+                        <div class="evaluation-item">
+                            <div class="eval-icon">⚠</div>
+                            <p class="eval-text">
+                                紙管理はオペレーション教育が甘いと破綻する
+                            </p>
+                        </div>
+                        <div class="evaluation-item">
+                            <div class="eval-icon">⚠</div>
+                            <p class="eval-text">
+                                フロアの記入精度が低いと全体が崩れる
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="conclusion-box">
+                <p class="conclusion-text">
+                    この仕組みは「雑にやると破綻、丁寧にやるとかなり強い」タイプ。<br>
+                    思想は正しい。あとは現場教育の徹底だけ。
+                </p>
+                <div class="absolute-principle">
+                    <p class="absolute-text">
+                        <strong>「記入はフロアが行う」「その場で書く」</strong><br>
+                        という原則は絶対に崩さない前提。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 店内ポイントをコインに変換する方法 -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">店内ポイントをコインに変換する方法</h2>
+            <p class="section-description">
+                店内ポイントが貯まってポーカーウェブコインに変換したい方や観光客などは、<br>
+                コインに変換できた方が良いため、コインに変換できることを提案する。
+            </p>
+            <div class="coin-conversion-box">
+                <h3 class="coin-conversion-title">フロー</h3>
+                <div class="coin-conversion-flow">
+                    <div class="coin-step">
+                        <div class="step-icon">✋</div>
+                        <div class="step-number">1</div>
+                        <h3 class="step-title">自己申告制</h3>
+                        <p class="step-text">コインに変えたいと言うのは、自己申告制</p>
+                    </div>
+                    <div class="step-connector-arrow">→</div>
+                    <div class="coin-step">
+                        <div class="step-icon">📝</div>
+                        <div class="step-number">2</div>
+                        <h3 class="step-title">Googleフォーム回答</h3>
+                        <p class="step-text">コインに変えたい人にGoogleフォームを回答してもらいます</p>
+                        <div class="form-items">
+                            <div class="form-item">📱 POKERファンズのID</div>
+                            <div class="form-item">🎮 ポーカーウェブのゲームID</div>
+                            <div class="form-item">💎 変換したいポイント数</div>
+                        </div>
+                    </div>
+                    <div class="step-connector-arrow">→</div>
+                    <div class="coin-step">
+                        <div class="step-icon">📊</div>
+                        <div class="step-number">3</div>
+                        <h3 class="step-title">スプレッドシートで確認・付与</h3>
+                        <p class="step-text">スプレッドシートで付与金額を確認して該当プレイヤーに付与します</p>
+                    </div>
+                </div>
+            </div>
+            <div class="benefit-box">
+                <h3 class="benefit-title">この仕組みのメリット</h3>
+                <div class="benefit-content">
+                    <p class="benefit-text">
+                        新規の方などに毎回ゲームIDを登録してもらい、クラブ申請などめんどくさいオペレーションにならない。
+                    </p>
+                    <p class="benefit-text highlight">
+                        <strong>コインに変えたい人だけゲームIDを登録してクラブ申請をしてもらえばオッケー</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">Re:Poker オペレーション説明資料</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

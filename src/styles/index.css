@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0a0e12;
+  --color-panel: #10161d;
+  --color-panel2: #161e27;
+  --color-line: #1f2a35;
+  --color-ink: #d6e2ec;
+  --color-ink-dim: #6b7d8f;
+  --color-accent: #3ef58f;
+  --color-warn: #ffb454;
+  --color-alert: #ff5d6c;
+  --color-data: #4cc3ff;
+  --font-sans: "Noto Sans JP", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  /* 管制室風の淡いグリッド */
+  background-image:
+    linear-gradient(rgba(31, 42, 53, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31, 42, 53, 0.16) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+@layer components {
+  /* 数値表示: 等幅 + tabular-nums */
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* コックピット風マイクロラベル (WEIGHT / SLEEP など) */
+  .microlabel {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    line-height: 1rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-ink-dim);
+  }
+
+  .panel {
+    background-color: var(--color-panel);
+    border: 1px solid var(--color-line);
+    border-radius: 4px;
+  }
+
+  .input {
+    width: 100%;
+    background-color: var(--color-panel2);
+    border: 1px solid var(--color-line);
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    color: var(--color-ink);
+    font-size: 1rem;
+    min-height: 2.75rem;
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+
+  .input::placeholder {
+    color: var(--color-ink-dim);
+    opacity: 0.6;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    background-color: var(--color-accent);
+    color: #06130c;
+    font-weight: 700;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    padding: 0.625rem 1rem;
+    min-height: 2.75rem;
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.4;
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    background-color: transparent;
+    color: var(--color-ink);
+    border: 1px solid var(--color-line);
+    font-size: 0.875rem;
+    border-radius: 4px;
+    padding: 0.625rem 1rem;
+    min-height: 2.75rem;
+  }
+
+  .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: var(--color-alert);
+    border: 1px solid color-mix(in srgb, var(--color-alert) 45%, transparent);
+    font-size: 0.875rem;
+    border-radius: 4px;
+    padding: 0.625rem 1rem;
+    min-height: 2.75rem;
+  }
+}
