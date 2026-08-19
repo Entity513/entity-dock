@@ -13,7 +13,15 @@ Apple Watch / iPhone のヘルスケアデータを、毎晩自動で `daily_log
 | 睡眠（就寝・起床） | `sleep_start` / `sleep_end` | Apple Watch |
 | 体重 | `weight_kg` | スマート体重計（ヘルスケア連携がある場合） |
 
-方式は2つ。**まず A のショートカットで試して、睡眠まで自動化したくなったら B に乗り換える**のが早い。
+方式は2つ。**睡眠まで自動化したいなら B（受け口は実装済み）**。歩数などの活動量だけを今すぐ無料で試したいなら A。
+
+| | A. ショートカット | B. Health Auto Export |
+|---|---|---|
+| 費用 | 無料 | アプリが有料 |
+| 睡眠 | 扱いづらい（非対応とする） | ✅ 対応 |
+| 活動量 | ✅ 対応 | ✅ 対応 |
+| 準備 | ショートカットを手で組む | Edge Function をデプロイ + アプリ設定 |
+| 実装 | 手順のみ | `supabase/functions/health-import/` に実装済み |
 
 ## 前提: Mac mini は経由しない
 
@@ -123,46 +131,89 @@ Mac mini は別の Apple アカウントで運用されているが、ヘルス�
 
 ---
 
-## B. Health Auto Export（有料・睡眠まで自動化）
+## B. Health Auto Export（有料・睡眠まで自動化）★推奨
 
-App Store の「Health Auto Export - JSON+CSV」を使う。REST API へ定期送信する機能があり、睡眠を含む広範なデータをまとめて吐ける。
+睡眠を自動で入れたいならこちら。受け口の Edge Function は**実装済み**なので、デプロイとアプリ設定だけで動く。
 
 ### 構成
 
 ```
 Apple Watch → iPhone ヘルスケア → Health Auto Export
-   → (定期POST) → Supabase Edge Function → daily_logs に UPSERT
+   → (定期POST) → Edge Function (health-import) → daily_logs に UPSERT
 ```
 
-Health Auto Export が送る JSON は日付・単位・入れ子の形が独自なので、**間に Edge Function を1つ挟んで整形する**のが確実。REST API に直接投げても、そのままではスキーマに合わない。
+コード: `supabase/functions/health-import/index.ts`
 
-### 手順
+やっていること:
 
-1. アプリ内で **Automations → REST API** を選び、送信先 URL に後述の Edge Function の URL を設定
-2. 送信するデータ: `Step Count`, `Active Energy`, `Apple Exercise Time`, `Apple Stand Hour`, `Sleep Analysis`, （体重計があれば `Body Mass`）
-3. 送信間隔: 1日1回（深夜〜早朝。睡眠データが確定した後）
-4. フォーマット: JSON
+- 共有シークレット（`x-api-key` ヘッダ）で認証
+- 歩数・アクティブカロリー・エクササイズ・スタンド・体重・睡眠を抽出
+- 日付は HAE が送るローカル日付（JST）をそのまま使う
+- 睡眠は行の `date` を**起床日**にする（就寝が前日でも正しい行に入る）
+- 同じ日に複数点が来たら合算（体重だけ最後の値）
+- カロリーが kJ で来たら kcal に換算
+- DB の CHECK 制約に触れる睡眠（逆転・24時間超）は送る前に捨てる
+- **受け取った指標に対応する列だけ**を UPSERT（手入力や Entity の値を消さない）
+- 知らない指標はレスポンスの `ignored` に出す（何が来ているか分かる）
 
-### Edge Function（受け口）
+### 1. デプロイ
 
-`supabase/functions/health-import/index.ts` を作り、次の処理を書く。
-
-- 共有シークレット（ヘッダ）で簡易認証する ⚠️ この関数は公開 URL になるので、無防備だと誰でも書き込める
-- 受け取った JSON から指標ごとに日付・値を取り出す
-- 日付は **JST** で解釈する（UTC で切ると1日ずれる）
-- 睡眠は「就寝の開始時刻」と「起床の終了時刻」を取り、行の `date` は**起床日**にする
-- `daily_logs` に `on_conflict=date` + `merge-duplicates` で UPSERT（service_role キーを使う。Edge Function の環境変数に入れる）
-- **送られてきた指標に対応する列だけ**を payload に入れる
-
-デプロイ:
+Mac mini で:
 
 ```bash
-supabase functions deploy health-import --project-ref qnxtxnrzsbzjxejtmvtr
+# 任意の長いランダム文字列を作る
+openssl rand -hex 32
+
+# シークレットを登録
+supabase secrets set HEALTH_IMPORT_SECRET=<いま作った文字列> \
+  --project-ref qnxtxnrzsbzjxejtmvtr
+
+# デプロイ（--no-verify-jwt が必須。HAE は Supabase の JWT を送れない）
+supabase functions deploy health-import --no-verify-jwt \
+  --project-ref qnxtxnrzsbzjxejtmvtr
 ```
 
-実装は実際に届く JSON の形を見てからのほうが速いので、**まず1回 Health Auto Export から送らせて、そのペイロードを保存してから書く**。
+関数の URL:
 
----
+```
+https://qnxtxnrzsbzjxejtmvtr.supabase.co/functions/v1/health-import
+```
+
+### 2. 動作確認（アプリを入れる前に）
+
+```bash
+curl -sS -X POST \
+  "https://qnxtxnrzsbzjxejtmvtr.supabase.co/functions/v1/health-import" \
+  -H "x-api-key: <シークレット>" \
+  -H "Content-Type: application/json" \
+  -d '{"data":{"metrics":[
+    {"name":"step_count","units":"count","data":[{"date":"2026-08-19 08:00:00 +0900","qty":9421}]},
+    {"name":"sleep_analysis","data":[{"date":"2026-08-19 00:00:00 +0900","sleepStart":"2026-08-18 23:40:00 +0900","sleepEnd":"2026-08-19 07:10:00 +0900"}]}
+  ]}}'
+```
+
+`{"ok":true,"days":1,"dates":["2026-08-19"],...}` が返り、Web アプリの
+まとめ画面で歩数と睡眠が入っていれば成功。
+
+### 3. iPhone アプリの設定
+
+1. App Store で「Health Auto Export - JSON+CSV」を入れる
+2. **Automations → 新規 → REST API**
+3. URL: 上の関数 URL
+4. Method: **POST**、Format: **JSON**
+5. ヘッダに `x-api-key` = シークレットを追加
+6. 送るデータ: `Step Count`, `Active Energy`, `Apple Exercise Time`,
+   `Apple Stand Hour`, `Sleep Analysis`（体重計があれば `Body Mass`）
+7. 実行間隔: 1日1回、**朝（睡眠データが確定した後）**
+
+⚠️ 指標名がここに書いたものと違っても、関数側で表記ゆれを吸収している。
+それでも入らない場合は、レスポンスの `ignored` に実際の名前が出るので、
+`METRIC_ALIASES` にその名前を足す。
+
+### 4. 確認
+
+送信後、Web アプリの **REST（睡眠）** タブと **DRIVE（運動量）** タブに
+値が出ていれば完了。以降は放置で毎日入る。
 
 ## 睡眠スコアについて
 
