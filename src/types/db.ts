@@ -3,7 +3,6 @@ export type Source = 'entity' | 'web'
 
 export interface DailyLog {
   date: string // YYYY-MM-DD
-  user_id: string
   weight_kg: number | null
   sleep_start: string | null // timestamptz ISO
   sleep_end: string | null // timestamptz ISO
@@ -21,12 +20,11 @@ export interface DailyLog {
 
 /** daily_logs の部分 UPSERT 用。各エディタは自分のカラムだけを送る */
 export type DailyLogPatch = Partial<
-  Omit<DailyLog, 'date' | 'user_id' | 'updated_at'>
+  Omit<DailyLog, 'date' | 'updated_at'>
 >
 
 export interface Meal {
   id: string
-  user_id: string
   date: string
   time: string | null // 'HH:MM:SS'
   meal_type: MealType
@@ -39,7 +37,6 @@ export interface Meal {
 
 export interface Workout {
   id: string
-  user_id: string
   date: string
   photo_url: string | null // Storage オブジェクトパス
   menu: string | null

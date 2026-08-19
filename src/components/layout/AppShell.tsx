@@ -1,5 +1,4 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { supabase } from '../../lib/supabase'
 
 const tabClass = ({ isActive }: { isActive: boolean }) =>
   `flex flex-1 flex-col items-center gap-0.5 py-2 ${
@@ -14,17 +13,7 @@ export function AppShell() {
           <span className="num text-sm font-semibold tracking-[0.25em] text-ink">
             ENTITY DOCK
           </span>
-          <button
-            type="button"
-            className="microlabel"
-            onClick={() => {
-              if (window.confirm('ログアウトしますか？')) {
-                void supabase.auth.signOut()
-              }
-            }}
-          >
-            LOGOUT
-          </button>
+          <span className="microlabel">あなたの夢を、目的地へ。</span>
         </div>
       </header>
 

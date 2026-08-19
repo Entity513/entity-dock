@@ -1,30 +1,42 @@
 -- ============================================================
 -- Entity Dock  初期スキーマ (Phase 1)
 -- Supabase SQL Editor に貼り付けて実行するか、
--- `supabase link` + `supabase db push` で適用する。
+-- Management API の /database/query に投げる。
+--
+-- ★ 認証なし構成
+--   このアプリはログインを持たない。anon キー（= 公開鍵、JS バンドルに
+--   含まれる）だけで読み書きできる。つまり URL を知っている人は誰でも
+--   全データを閲覧・編集・削除できる。オーナーの明示的な判断による設計。
+--   後からログインを付ける場合は、user_id 列と
+--   `user_id = auth.uid()` の RLS ポリシーに戻すこと。
 --
 -- 設計メモ:
--- * 全テーブルに user_id (default auth.uid()) を持たせ、RLS で本人のみに制限。
---   Web (anon key + ログインセッション) からの INSERT は default で自動的に
---   本人の uuid が入る。
--- * Entity (service_role key) は RLS をバイパスするが、auth.uid() が NULL に
---   なるため default が効かず、NOT NULL 制約により user_id の明示送信が
---   強制される。これは意図したガード（他人の行を「うっかり」作れない）。
---   → Entity からの書き込みでは必ず user_id を含めること (Phase 2 の
---     ENTITY_API.md 参照)。
+-- * RLS は有効のまま、anon / authenticated に全許可のポリシーを張る
+--   （RLS を無効にすると PostgREST 側で弾かれるため）。
 -- * photo_url には署名URLではなく Storage のオブジェクトパスを保存する
 --   (例: meals/2026/08/xxxx.jpg)。署名は表示時にフロントで行う。
+-- * Entity (service_role key) は RLS をバイパスするので、そのまま
+--   INSERT/UPSERT できる (Phase 2 の ENTITY_API.md 参照)。
+--
+-- このファイルは何度でも流し直せる（先頭で既存オブジェクトを削除する）。
+-- ※ 既存データがある場合は消えるので注意。
 -- ============================================================
 
 -- ------------------------------------------------------------
--- daily_logs: 1日1行。date が PK（単一ユーザー前提。
--- 将来マルチユーザー化する場合は PK を (user_id, date) に変更する）。
+-- リセット
+-- ------------------------------------------------------------
+drop table if exists public.meals cascade;
+drop table if exists public.workouts cascade;
+drop table if exists public.daily_logs cascade;
+drop function if exists public.set_updated_at() cascade;
+
+-- ------------------------------------------------------------
+-- daily_logs: 1日1行。date が PK。
 -- sleep_start / sleep_end は timestamptz。睡眠は日付をまたぐため
 -- time 型では表現できない。行の date は「起床日」を表す。
 -- ------------------------------------------------------------
 create table public.daily_logs (
   date            date primary key,
-  user_id         uuid not null default auth.uid() references auth.users (id),
   weight_kg       numeric(5, 2) check (weight_kg > 0 and weight_kg < 300),
   sleep_start     timestamptz,
   sleep_end       timestamptz,
@@ -47,7 +59,6 @@ create table public.daily_logs (
 
 create table public.meals (
   id          uuid primary key default gen_random_uuid(),
-  user_id     uuid not null default auth.uid() references auth.users (id),
   date        date not null,
   time        time,
   meal_type   text not null check (meal_type in ('breakfast', 'lunch', 'dinner', 'snack')),
@@ -62,7 +73,6 @@ create index meals_date_idx on public.meals (date);
 
 create table public.workouts (
   id         uuid primary key default gen_random_uuid(),
-  user_id    uuid not null default auth.uid() references auth.users (id),
   date       date not null,
   photo_url  text, -- トレーニングノート写真のオブジェクトパス
   menu       text,
@@ -93,51 +103,29 @@ create trigger daily_logs_set_updated_at
   execute function public.set_updated_at();
 
 -- ------------------------------------------------------------
--- RLS: 本人 (user_id = auth.uid()) のみ読み書き可。
--- anon 向けポリシーは作らない → 未ログインでは何も見えない。
--- service_role は RLS をバイパスする (Entity 用)。
+-- RLS: 認証なし構成のため anon にも全許可。
+-- RLS 自体は有効にしておく（無効だと PostgREST が拒否する）。
 -- ------------------------------------------------------------
 alter table public.daily_logs enable row level security;
 alter table public.meals enable row level security;
 alter table public.workouts enable row level security;
 
-create policy "daily_logs_select_own" on public.daily_logs
-  for select to authenticated using (user_id = auth.uid());
-create policy "daily_logs_insert_own" on public.daily_logs
-  for insert to authenticated with check (user_id = auth.uid());
-create policy "daily_logs_update_own" on public.daily_logs
-  for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy "daily_logs_delete_own" on public.daily_logs
-  for delete to authenticated using (user_id = auth.uid());
-
-create policy "meals_select_own" on public.meals
-  for select to authenticated using (user_id = auth.uid());
-create policy "meals_insert_own" on public.meals
-  for insert to authenticated with check (user_id = auth.uid());
-create policy "meals_update_own" on public.meals
-  for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy "meals_delete_own" on public.meals
-  for delete to authenticated using (user_id = auth.uid());
-
-create policy "workouts_select_own" on public.workouts
-  for select to authenticated using (user_id = auth.uid());
-create policy "workouts_insert_own" on public.workouts
-  for insert to authenticated with check (user_id = auth.uid());
-create policy "workouts_update_own" on public.workouts
-  for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy "workouts_delete_own" on public.workouts
-  for delete to authenticated using (user_id = auth.uid());
+create policy "daily_logs_all" on public.daily_logs
+  for all to anon, authenticated using (true) with check (true);
+create policy "meals_all" on public.meals
+  for all to anon, authenticated using (true) with check (true);
+create policy "workouts_all" on public.workouts
+  for all to anon, authenticated using (true) with check (true);
 
 -- ============================================================
--- Storage: private バケット 'photos' とアクセスポリシー
+-- Storage: バケット 'photos'
 --
--- ※ この節が権限エラーになった場合 (CLI 実行時など) は、
---   ここから下だけを Supabase Dashboard の SQL Editor で実行すること。
+-- バケット自体は private のままにして、表示時に署名 URL を発行する
+-- （オブジェクトを直リンクで総当たりされないようにするため）。
+-- ただし anon が署名 URL を発行できるので、実質的な保護にはならない。
 --
--- ポリシーは owner ベースではなくロールベース (authenticated) にしている。
--- Entity (service_role) がアップロードするオブジェクトには owner が
--- 付かないため、owner = auth.uid() で縛ると Web から見えなくなる。
--- 単一ユーザー + private バケットなので authenticated = 本人 で等価。
+-- ※ この節が権限エラーになった場合は、ここから下だけを
+--   Supabase Dashboard の SQL Editor で実行すること。
 -- ============================================================
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
@@ -147,13 +135,17 @@ values (
   10485760, -- 10MB
   array['image/jpeg', 'image/png', 'image/webp']
 )
-on conflict (id) do nothing;
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
 
-create policy "photos_select_authenticated" on storage.objects
-  for select to authenticated using (bucket_id = 'photos');
-create policy "photos_insert_authenticated" on storage.objects
-  for insert to authenticated with check (bucket_id = 'photos');
-create policy "photos_update_authenticated" on storage.objects
-  for update to authenticated using (bucket_id = 'photos') with check (bucket_id = 'photos');
-create policy "photos_delete_authenticated" on storage.objects
-  for delete to authenticated using (bucket_id = 'photos');
+drop policy if exists "photos_select_authenticated" on storage.objects;
+drop policy if exists "photos_insert_authenticated" on storage.objects;
+drop policy if exists "photos_update_authenticated" on storage.objects;
+drop policy if exists "photos_delete_authenticated" on storage.objects;
+drop policy if exists "photos_all" on storage.objects;
+
+create policy "photos_all" on storage.objects
+  for all to anon, authenticated
+  using (bucket_id = 'photos') with check (bucket_id = 'photos');

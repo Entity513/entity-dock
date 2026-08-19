@@ -3,26 +3,19 @@ import {
   Navigate,
   RouterProvider,
 } from 'react-router-dom'
-import { LoginPage } from './auth/LoginPage'
-import { RequireAuth } from './auth/RequireAuth'
 import { AppShell } from './components/layout/AppShell'
 import { DayDetailPage } from './pages/DayDetailPage'
 import { LogPage } from './pages/LogPage'
 import { TodayPage } from './pages/TodayPage'
 
+// 認証なし構成（オーナーの判断）。ログイン画面もセッション管理も持たない。
 const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
   {
-    element: <RequireAuth />,
+    element: <AppShell />,
     children: [
-      {
-        element: <AppShell />,
-        children: [
-          { path: '/', element: <TodayPage /> },
-          { path: '/log', element: <LogPage /> },
-          { path: '/log/:date', element: <DayDetailPage /> },
-        ],
-      },
+      { path: '/', element: <TodayPage /> },
+      { path: '/log', element: <LogPage /> },
+      { path: '/log/:date', element: <DayDetailPage /> },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },

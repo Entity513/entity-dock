@@ -9,4 +9,11 @@ if (!url || !anonKey) {
   )
 }
 
-export const supabase = createClient(url, anonKey)
+// 認証なし構成のため、セッション管理は一切行わない（anon キーのみで動く）
+export const supabase = createClient(url, anonKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+    detectSessionInUrl: false,
+  },
+})
