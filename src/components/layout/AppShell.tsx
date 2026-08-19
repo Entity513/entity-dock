@@ -31,6 +31,10 @@ export function AppShell() {
             <span className="microlabel text-inherit!">LOG</span>
             <span className="text-xs font-medium">ログ</span>
           </NavLink>
+          <NavLink to="/dashboard" className={tabClass}>
+            <span className="microlabel text-inherit!">DASHBOARD</span>
+            <span className="text-xs font-medium">分析</span>
+          </NavLink>
         </div>
       </nav>
     </div>

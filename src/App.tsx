@@ -4,6 +4,7 @@ import {
   RouterProvider,
 } from 'react-router-dom'
 import { AppShell } from './components/layout/AppShell'
+import { DashboardPage } from './pages/DashboardPage'
 import { DayDetailPage } from './pages/DayDetailPage'
 import { LogPage } from './pages/LogPage'
 import { TodayPage } from './pages/TodayPage'
@@ -16,6 +17,7 @@ const router = createBrowserRouter([
       { path: '/', element: <TodayPage /> },
       { path: '/log', element: <LogPage /> },
       { path: '/log/:date', element: <DayDetailPage /> },
+      { path: '/dashboard', element: <DashboardPage /> },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },
