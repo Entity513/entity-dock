@@ -10,6 +10,7 @@ import {
 } from '../../types/db'
 import { BottomSheet } from '../ui/BottomSheet'
 import { Field } from '../ui/Field'
+import { NumberInput } from '../ui/NumberInput'
 import { PhotoPicker } from '../ui/PhotoPicker'
 import { TagInput } from '../ui/TagInput'
 
@@ -44,6 +45,10 @@ export function MealEditorSheet({ date, meal, initialType, onClose }: Props) {
   )
   const [description, setDescription] = useState(meal?.description ?? '')
   const [tags, setTags] = useState<string[]>(meal?.tags ?? [])
+  const [kcal, setKcal] = useState<number | null>(meal?.kcal ?? null)
+  const [protein, setProtein] = useState<number | null>(meal?.protein_g ?? null)
+  const [fat, setFat] = useState<number | null>(meal?.fat_g ?? null)
+  const [carb, setCarb] = useState<number | null>(meal?.carb_g ?? null)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoRemoved, setPhotoRemoved] = useState(false)
   const [compressing, setCompressing] = useState(false)
@@ -72,6 +77,10 @@ export function MealEditorSheet({ date, meal, initialType, onClose }: Props) {
         photo_url: photoUrl,
         description: description.trim() || null,
         tags,
+        kcal,
+        protein_g: protein,
+        fat_g: fat,
+        carb_g: carb,
       })
       // 置き換え/削除された古い写真の後始末（ベストエフォート）
       if (meal?.photo_url && (photoFile || photoRemoved)) {
@@ -158,6 +167,50 @@ export function MealEditorSheet({ date, meal, initialType, onClose }: Props) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
+        </Field>
+
+        <Field label="栄養（概算でよい）" en="NUTRITION">
+          <div className="flex flex-col gap-2">
+            <NumberInput
+              value={kcal}
+              onChange={setKcal}
+              step={50}
+              min={0}
+              max={19999}
+              unit="kcal"
+            />
+            <div className="grid grid-cols-3 gap-2">
+              {(
+                [
+                  ['P たんぱく質', protein, setProtein],
+                  ['F 脂質', fat, setFat],
+                  ['C 炭水化物', carb, setCarb],
+                ] as const
+              ).map(([label, value, setter]) => (
+                <label key={label} className="flex flex-col gap-1">
+                  <span className="microlabel">{label}</span>
+                  <span className="relative">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      className="input num pr-6 text-center"
+                      placeholder="--"
+                      value={value != null ? String(value) : ''}
+                      onChange={(e) => {
+                        const t = e.target.value.trim()
+                        if (t === '') return setter(null)
+                        const n = Number(t)
+                        setter(Number.isFinite(n) ? n : null)
+                      }}
+                    />
+                    <span className="t-unit absolute top-1/2 right-2 -translate-y-1/2">
+                      g
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
         </Field>
 
         <Field label="タグ" en="TAGS">

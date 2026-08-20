@@ -12,10 +12,10 @@ export function RangeSelector({ value, onChange }: Props) {
         <button
           key={days}
           type="button"
-          className={`flex h-11 items-center justify-center rounded-[4px] border text-sm ${
+          className={`flex h-9 items-center justify-center rounded-[3px] border text-xs ${
             value === days
-              ? 'border-accent bg-accent/15 font-semibold text-accent'
-              : 'border-line bg-panel2 text-ink-dim'
+              ? 'border-accent/50 bg-accent/10 font-semibold text-ink'
+              : 'border-line/70 text-ink-dim'
           }`}
           onClick={() => onChange(days)}
         >

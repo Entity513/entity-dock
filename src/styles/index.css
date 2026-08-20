@@ -126,6 +126,64 @@ body {
     font-variant-numeric: tabular-nums;
   }
 
+  /* ------------------------------------------------------------
+     文字の階層。値の大きさで情報の序列を作る。
+     色で強調しない — アクセントを全部の値に使うと序列が消えて
+     ネオンだけが残り、安く見える。値は ink、accent は
+     進捗・差分・現在地にだけ使う。
+     ------------------------------------------------------------ */
+
+  /* 画面の主役の数値（今日の体重など） */
+  .t-display {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 2rem;
+    line-height: 1.05;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
+  }
+
+  /* カード内の主要な数値 */
+  .t-metric {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.375rem;
+    line-height: 1.15;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+  }
+
+  /* 行の中の値 */
+  .t-value {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+
+  /* 単位。値のすぐ後ろに小さく添える */
+  .t-unit {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-ink-dim);
+  }
+
+  /* 日本語の項目名 */
+  .t-label {
+    font-size: 0.8125rem;
+    color: var(--color-ink);
+  }
+
+  /* 補足・内容の要約 */
+  .t-sub {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--color-ink-dim);
+  }
+
   /* コックピット風マイクロラベル (WEIGHT / SLEEP など) */
   .microlabel {
     font-family: var(--font-mono);
@@ -133,7 +191,14 @@ body {
     line-height: 1rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--color-ink-dim);
+    color: color-mix(in srgb, var(--color-ink-dim) 80%, transparent);
+  }
+
+  /* 値が無いときの表現。「未入力」とは書かず、静かに引く */
+  .t-empty {
+    font-family: var(--font-mono);
+    font-size: 0.9375rem;
+    color: color-mix(in srgb, var(--color-ink-dim) 45%, transparent);
   }
 
   .panel {

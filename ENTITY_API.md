@@ -751,6 +751,62 @@ curl -sS -X DELETE "$SUPABASE_URL/storage/v1/object/photos/meals/2026/08/9f1c0b7
 
 ---
 
+### 6.5 栄養の推定（重要）
+
+食事を記録するときは、写真と内容から **kcal / P / F / C を概算して必ず入れる**。
+Web アプリの FUEL タブはこの4つで栄養ダッシュボードを描く。入っていない食事は
+「栄養未算出」として合計から外れ、画面が空になる。
+
+| 列 | 型 | 内容 |
+|---|---|---|
+| `kcal` | integer | 概算カロリー |
+| `protein_g` | numeric(5,1) | たんぱく質 (g) |
+| `fat_g` | numeric(5,1) | 脂質 (g) |
+| `carb_g` | numeric(5,1) | 炭水化物 (g) |
+
+⚠️ **厳密さは求めていない。** れおんが見たいのは絶対値ではなく積み上がりと傾向。
+分からない栄養素は `null` のままでよいが、**全部 null にはしないこと**。
+写真から量が読めないときは、一般的な一人前を仮定して概算を入れる。
+
+推定の目安（1人前）:
+
+| 食品 | kcal | P | F | C |
+|---|---|---|---|---|
+| 白米 150g | 250 | 4 | 0.5 | 55 |
+| 鶏むね肉 200g（皮なし） | 220 | 46 | 3 | 0 |
+| 卵 1個 | 75 | 6 | 5 | 0.5 |
+| プロテイン 1杯 | 120 | 24 | 2 | 3 |
+| サーモン 100g | 200 | 20 | 13 | 0 |
+| ブロッコリー 100g | 35 | 4 | 0.4 | 7 |
+| 牛ステーキ 200g | 500 | 40 | 36 | 0 |
+
+複数の食材が写っていれば足し合わせる。油や調味料は 50-100 kcal 程度上乗せする。
+
+完全な例:
+
+```bash
+curl -sS -X POST "$SUPABASE_URL/rest/v1/meals" \
+  -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=representation" \
+  -d '{
+    "date": "2026-08-20",
+    "time": "19:20:00",
+    "meal_type": "dinner",
+    "photo_url": "meals/2026/08/9f1c0b7e-2a44-4a1b-9c0e-3d5f8a7b1e22.jpg",
+    "description": "牛ステーキ200g、白米150g、ブロッコリー。自炊。",
+    "tags": ["自炊", "高たんぱく"],
+    "kcal": 830,
+    "protein_g": 48,
+    "fat_g": 37,
+    "carb_g": 62,
+    "source": "entity"
+  }'
+```
+
+---
+
 ## 7. トレーニングの記録
 
 れおんは紙のトレーニングノートを写真で送ってくる。フローは食事と同じ 3 ステップ、テーブルが `workouts` になるだけ。

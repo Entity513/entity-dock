@@ -31,6 +31,11 @@ export interface Meal {
   photo_url: string | null // Storage オブジェクトパス
   description: string | null
   tags: string[]
+  /** 以下は概算。Entity が写真から推定するか、手入力する */
+  kcal: number | null
+  protein_g: number | null
+  fat_g: number | null
+  carb_g: number | null
   source: Source
   created_at: string
 }
@@ -53,4 +58,14 @@ export const MEAL_TYPE_LABELS: Record<MealType, string> = {
   lunch: '昼食',
   dinner: '夕食',
   snack: '間食',
+}
+
+/** 目標値。単一ユーザーなので1行だけ */
+export interface Settings {
+  target_weight_kg: number | null
+  target_sleep_hours: number | null
+  target_kcal: number | null
+  target_protein_g: number | null
+  target_fat_g: number | null
+  target_carb_g: number | null
 }

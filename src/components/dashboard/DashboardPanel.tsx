@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Card, CardEmpty } from '../ui/Card'
 
 interface Props {
   en: string
@@ -7,25 +8,15 @@ interface Props {
   children: ReactNode
 }
 
+/** グラフ用カード。見た目は Card に一本化してある */
 export function DashboardPanel({ en, ja, right, children }: Props) {
   return (
-    <section className="panel">
-      <header className="flex items-center justify-between gap-2 border-b border-line px-3 py-2">
-        <div className="flex items-baseline gap-2">
-          <span className="microlabel whitespace-nowrap">{en}</span>
-          <span className="text-xs whitespace-nowrap text-ink-dim">{ja}</span>
-        </div>
-        {right}
-      </header>
+    <Card en={en} ja={ja} right={right}>
       {children}
-    </section>
+    </Card>
   )
 }
 
 export function PanelEmpty({ message }: { message?: string }) {
-  return (
-    <p className="px-3 py-8 text-center text-sm text-ink-dim">
-      {message ?? 'データがまだありません。'}
-    </p>
-  )
+  return <CardEmpty message={message ?? 'データがまだありません'} />
 }

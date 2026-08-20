@@ -29,6 +29,10 @@ export interface MealInput {
   photo_url?: string | null
   description: string | null
   tags: string[]
+  kcal: number | null
+  protein_g: number | null
+  fat_g: number | null
+  carb_g: number | null
 }
 
 export function useSaveMeal() {
