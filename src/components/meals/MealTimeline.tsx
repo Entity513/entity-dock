@@ -111,10 +111,10 @@ export function MealTimeline({ meals, onEdit, onAdd }: Props) {
           <button
             key={t}
             type="button"
-            className="flex h-9 items-center justify-center rounded-[3px] border border-line/70 text-xs text-ink-dim"
+            className="flex h-10 items-center justify-center rounded-[3px] border border-accent/40 bg-accent/8 text-xs font-medium text-accent"
             onClick={() => onAdd(t)}
           >
-            {MEAL_TYPE_LABELS[t]}
+            ＋{MEAL_TYPE_LABELS[t]}
           </button>
         ))}
       </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { QuickAddSheet } from '../components/daily/QuickAddSheet'
 import { RecentStrip } from '../components/daily/RecentStrip'
 import { SettingsSheet } from '../components/daily/SettingsSheet'
 import { TodayHero, TodaySummary } from '../components/daily/TodaySummary'
@@ -31,6 +32,7 @@ export function BridgePage() {
   const [days, setDays] = useState(30)
   const [ym, setYm] = useState(() => monthOf(todayStr()))
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [quickAddOpen, setQuickAddOpen] = useState(false)
   const navigate = useNavigate()
 
   // 深夜0時をまたいだら「今日」を切り替える
@@ -54,7 +56,7 @@ export function BridgePage() {
   const meals = mealsQ.data ?? []
   const workouts = workoutsQ.data ?? []
   const macros = totalMacros(meals)
-  const { openDaily, sheets } = useDaySheets(date, log)
+  const { openDaily, openMeal, openWorkout, sheets } = useDaySheets(date, log)
 
   const dayLoading = dailyQ.isLoading || mealsQ.isLoading || workoutsQ.isLoading
   const dayFatal =
@@ -71,13 +73,22 @@ export function BridgePage() {
           <span className="microlabel">BRIDGE</span>
           <h1 className="text-base font-bold">{formatDateJa(date)}</h1>
         </div>
-        <button
-          type="button"
-          className="microlabel"
-          onClick={() => setSettingsOpen(true)}
-        >
-          TARGETS
-        </button>
+        <span className="flex items-center gap-3">
+          <button
+            type="button"
+            className="microlabel"
+            onClick={() => setSettingsOpen(true)}
+          >
+            TARGETS
+          </button>
+          <button
+            type="button"
+            className="btn-record"
+            onClick={() => setQuickAddOpen(true)}
+          >
+            ＋ 記録
+          </button>
+        </span>
       </div>
 
       {dayFatal ? (
@@ -120,7 +131,8 @@ export function BridgePage() {
               weightBaseline={weightBaseline}
               streak={range?.summary.streak}
               onOpenDaily={openDaily}
-              onGoTab={(path) => void navigate(path)}
+              onOpenMeal={() => openMeal(null)}
+              onOpenWorkout={() => openWorkout(null)}
             />
           </Reveal>
         </>
@@ -186,6 +198,23 @@ export function BridgePage() {
         )}
       </AnalysisBlock>
 
+      {quickAddOpen && (
+        <QuickAddSheet
+          onClose={() => setQuickAddOpen(false)}
+          onPickDaily={(id) => {
+            setQuickAddOpen(false)
+            openDaily(id)
+          }}
+          onPickMeal={(type) => {
+            setQuickAddOpen(false)
+            openMeal(null, type)
+          }}
+          onPickWorkout={() => {
+            setQuickAddOpen(false)
+            openWorkout(null)
+          }}
+        />
+      )}
       {settingsOpen && <SettingsSheet onClose={() => setSettingsOpen(false)} />}
       {sheets}
     </div>

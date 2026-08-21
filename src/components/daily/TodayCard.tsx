@@ -26,7 +26,7 @@ export function TodayCard({ en, ja, metrics, actionLabel, onAction }: Props) {
           <span className="microlabel">{en}</span>
           <span className="text-xs text-ink-dim">{ja}</span>
         </div>
-        <button type="button" className="text-xs text-accent" onClick={onAction}>
+        <button type="button" className="btn-record" onClick={onAction}>
           {actionLabel}
         </button>
       </header>

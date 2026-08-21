@@ -259,6 +259,22 @@ body {
     opacity: 0.4;
   }
 
+  /* 記録を始めるボタン。画面内で一番目立つ扱いにする */
+  .btn-record {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    background-color: color-mix(in srgb, var(--color-accent) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 55%, transparent);
+    color: var(--color-accent);
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    padding: 0.5rem 0.875rem;
+    min-height: 2.5rem;
+  }
+
   .btn-ghost {
     display: inline-flex;
     align-items: center;

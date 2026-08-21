@@ -32,7 +32,8 @@ interface Props {
   weightBaseline?: number | null
   streak?: number
   onOpenDaily: (id: DailySheetId) => void
-  onGoTab: (path: string) => void
+  onOpenMeal: () => void
+  onOpenWorkout: () => void
 }
 
 /** 未記録は「—」だけ。文言でも色でも咎めない */
@@ -59,7 +60,8 @@ export function TodaySummary({
   weightBaseline,
   streak,
   onOpenDaily,
-  onGoTab,
+  onOpenMeal,
+  onOpenWorkout,
 }: Props) {
   const macros = totalMacros(meals)
 
@@ -122,7 +124,7 @@ export function TodaySummary({
       value: meals.length > 0 ? String(meals.length) : null,
       unit: '件',
       detail: mealDetail,
-      onClick: () => onGoTab('/fuel'),
+      onClick: onOpenMeal,
     },
     {
       ja: '運動',
@@ -130,7 +132,7 @@ export function TodaySummary({
       value: log?.steps != null ? log.steps.toLocaleString() : null,
       unit: '歩',
       detail: workoutDetail && `筋トレ ${workoutDetail}`,
-      onClick: () => onGoTab('/drive'),
+      onClick: onOpenWorkout,
     },
     {
       ja: '心身',

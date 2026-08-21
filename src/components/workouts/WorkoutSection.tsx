@@ -64,7 +64,7 @@ export function WorkoutSection({ workouts, onEdit, onAdd }: Props) {
       <div className="p-2">
         <button
           type="button"
-          className="flex h-10 w-full items-center justify-center rounded-[4px] border border-dashed border-line text-xs text-ink-dim"
+          className="btn-record w-full"
           onClick={onAdd}
         >
           ＋ 筋トレを記録
